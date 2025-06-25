@@ -1,0 +1,2096 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Windows 95 Experience</title>
+  <link href="https://fonts.googleapis.com/css2?family=DotGothic16&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      user-select: none;
+      font-family: 'DotGothic16', 'MS Sans Serif', sans-serif;
+    }
+    
+    body {
+      background-color: #008080;
+      background-image: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><rect width="100" height="100" fill="%23008080"/><path d="M0 0L100 100M100 0L0 100" stroke="%23006060" stroke-width="1" opacity="0.2"/></svg>');
+      overflow: hidden;
+      height: 100vh;
+      cursor: default;
+    }
+    
+    .desktop {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: calc(100% - 32px);
+      overflow: hidden;
+    }
+    
+    /* Enhanced CRT effect */
+    .crt-effect {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      z-index: 10000;
+      background: 
+        repeating-linear-gradient(
+          0deg,
+          rgba(0, 0, 0, 0.15),
+          rgba(0, 0, 0, 0.15) 1px,
+          transparent 1px,
+          transparent 2px
+        ),
+        radial-gradient(
+          ellipse at center,
+          rgba(0, 0, 0, 0) 0%,
+          rgba(18, 16, 16, 0) 40%,
+          rgba(45, 45, 45, 0.1) 41%,
+          rgba(18, 16, 16, 0.1) 76%,
+          rgba(18, 16, 16, 0.1) 85%,
+          rgba(18, 16, 16, 0.1) 10%,
+          rgba(0, 0, 0, 0.1) 100%
+        );
+      animation: scan 8s linear infinite;
+      box-shadow: inset 0 0 10rem rgba(0, 0, 0, 0.5);
+    }
+    
+    @keyframes scan {
+      0% {
+        background-position: 0 0;
+      }
+      100% {
+        background-position: 0 100%;
+      }
+    }
+    
+    /* Desktop icons */
+    .desktop-icon {
+      width: 70px;
+      text-align: center;
+      color: white;
+      font-size: 12px;
+      position: absolute;
+      cursor: pointer;
+      padding: 2px;
+      text-shadow: 1px 1px 1px #000;
+      transition: all 0.2s ease;
+      animation: fadeIn 0.5s forwards;
+      opacity: 0;
+    }
+    
+    .desktop-icon:nth-child(1) { animation-delay: 0.2s; }
+    .desktop-icon:nth-child(2) { animation-delay: 0.4s; }
+    .desktop-icon:nth-child(3) { animation-delay: 0.6s; }
+    .desktop-icon:nth-child(4) { animation-delay: 0.8s; }
+    .desktop-icon:nth-child(5) { animation-delay: 1.0s; }
+    .desktop-icon:nth-child(6) { animation-delay: 1.2s; }
+    
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(10px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .desktop-icon:hover {
+      background-color: rgba(0, 0, 128, 0.3);
+    }
+    
+    .desktop-icon.selected {
+      background-color: rgba(0, 0, 128, 0.5);
+      outline: 1px dotted #FFFFFF;
+    }
+    
+    .desktop-icon img {
+      width: 32px;
+      height: 32px;
+      image-rendering: pixelated;
+      display: block;
+      margin: 0 auto 2px;
+      filter: drop-shadow(1px 1px 0px rgba(0, 0, 0, 0.5));
+      transition: transform 0.2s ease;
+    }
+    
+    .desktop-icon:hover img {
+      transform: scale(1.1);
+    }
+    
+    /* Enhanced Windows styling */
+    .window {
+      background-color: #C0C0C0;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      position: absolute;
+      z-index: 1000;
+      box-shadow: 
+        2px 2px 0px rgba(0, 0, 0, 0.25),
+        inset 1px 1px 0px rgba(255, 255, 255, 0.5),
+        inset -1px -1px 0px rgba(0, 0, 0, 0.25);
+      min-width: 300px;
+      display: none;
+      animation: windowOpen 0.3s ease-out forwards;
+      transform-origin: top left;
+      opacity: 0;
+      transform: scale(0.95);
+    }
+    
+    @keyframes windowOpen {
+      from { opacity: 0; transform: scale(0.95); }
+      to { opacity: 1; transform: scale(1); }
+    }
+    
+    .window.closing {
+      animation: windowClose 0.3s ease-in forwards;
+    }
+    
+    @keyframes windowClose {
+      from { opacity: 1; transform: scale(1); }
+      to { opacity: 0; transform: scale(0.95); }
+    }
+    
+    .window.focused {
+      z-index: 1001;
+      box-shadow: 
+        3px 3px 5px rgba(0, 0, 0, 0.5),
+        inset 1px 1px 0px rgba(255, 255, 255, 0.5),
+        inset -1px -1px 0px rgba(0, 0, 0, 0.25);
+    }
+    
+    .window.focused .title-bar {
+      background: linear-gradient(to right, #000080, #2A4BD7);
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+    }
+    
+    .title-bar {
+      background: linear-gradient(to right, #808080, #A0A0A0);
+      color: #C0C0C0;
+      padding: 2px 4px;
+      font-weight: bold;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      height: 18px;
+      cursor: move;
+      font-size: 13px;
+      letter-spacing: 0.5px;
+      transition: background 0.2s ease;
+    }
+    
+    .title-bar-buttons {
+      display: flex;
+    }
+    
+    .title-bar-buttons button {
+      background-color: #C0C0C0;
+      border: 1px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      width: 16px;
+      height: 14px;
+      font-size: 8px;
+      line-height: 12px;
+      padding: 0;
+      margin-left: 2px;
+      cursor: pointer;
+      text-align: center;
+      font-weight: bold;
+      transition: all 0.1s ease;
+    }
+    
+    .title-bar-buttons button:hover {
+      background-color: #d0d0d0;
+    }
+    
+    .title-bar-buttons button:active {
+      border-color: #808080 #FFFFFF #FFFFFF #808080;
+      background-color: #b0b0b0;
+    }
+    
+    .content {
+      padding: 8px;
+      overflow: auto;
+      max-height: 400px;
+      background: linear-gradient(to bottom, #C0C0C0, #E0E0E0);
+    }
+    
+    /* Taskbar */
+    .taskbar {
+      position: fixed;
+      bottom: 0;
+      width: 100%;
+      background-color: #C0C0C0;
+      border-top: 2px solid #FFFFFF;
+      display: flex;
+      align-items: center;
+      padding: 2px;
+      z-index: 2000;
+      height: 28px;
+      box-sizing: border-box;
+      box-shadow: inset 1px 0px 0px rgba(255, 255, 255, 0.5),
+                  inset -1px -1px 0px rgba(0, 0, 0, 0.5);
+    }
+    
+    .start-button {
+      background-color: #C0C0C0;
+      border: 2px outset #FFFFFF;
+      padding: 0 6px;
+      font-weight: bold;
+      font-size: 14px;
+      cursor: pointer;
+      height: 24px;
+      display: flex;
+      align-items: center;
+      box-shadow: inset -1px -1px 0px rgba(0, 0, 0, 0.25);
+      transition: all 0.1s ease;
+    }
+    
+    .start-button:hover {
+      background-color: #d0d0d0;
+    }
+    
+    .start-button:active {
+      border: 2px inset #FFFFFF;
+      background-color: #b0b0b0;
+    }
+    
+    .start-button img {
+      width: 16px;
+      height: 16px;
+      margin-right: 4px;
+      image-rendering: pixelated;
+    }
+    
+    .taskbar-time {
+      margin-left: auto;
+      padding: 0 6px;
+      background-color: #C0C0C0;
+      border: 2px inset #808080;
+      height: 20px;
+      display: flex;
+      align-items: center;
+      font-size: 12px;
+      min-width: 80px;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+    
+    .taskbar-time:hover {
+      background-color: #d0d0d0;
+      cursor: pointer;
+    }
+    
+    .taskbar-app {
+      background-color: #C0C0C0;
+      border: 2px outset #FFFFFF;
+      padding: 2px 10px;
+      margin: 0 2px;
+      font-size: 12px;
+      cursor: pointer;
+      box-shadow: inset -1px -1px 0px rgba(0, 0, 0, 0.25);
+      transition: all 0.2s ease;
+      max-width: 180px;
+      overflow: hidden;
+      white-space: nowrap;
+      text-overflow: ellipsis;
+    }
+    
+    .taskbar-app:hover {
+      background-color: #d0d0d0;
+    }
+    
+    .taskbar-app.active {
+      border: 2px inset #FFFFFF;
+      background-color: #000080;
+      color: white;
+    }
+    
+    /* Start Menu */
+    #startMenu {
+      position: fixed;
+      bottom: 30px;
+      left: 2px;
+      width: 200px;
+      background-color: #C0C0C0;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      z-index: 3000;
+      display: none;
+      box-shadow: 3px 3px 3px rgba(0, 0, 0, 0.3);
+      animation: menuSlide 0.2s ease-out forwards;
+      transform-origin: bottom left;
+    }
+    
+    @keyframes menuSlide {
+      from { transform: translateY(20px); opacity: 0; }
+      to { transform: translateY(0); opacity: 1; }
+    }
+    
+    .start-menu-header {
+      background: linear-gradient(to right, #000080, #1084d0);
+      color: white;
+      padding: 4px;
+      font-weight: bold;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+    }
+    
+    .start-menu-item {
+      padding: 4px 6px 4px 24px;
+      cursor: pointer;
+      position: relative;
+      background-repeat: no-repeat;
+      background-position: 4px center;
+      background-size: 16px;
+      font-size: 13px;
+      transition: all 0.2s ease;
+    }
+    
+    .start-menu-item:hover {
+      background-color: #000080;
+      color: white;
+    }
+    
+    /* Notepad styling */
+    .notepad-content {
+      width: 100%;
+      height: 300px;
+      background: white;
+      border: 2px inset #808080;
+      padding: 5px;
+      font-family: 'Courier New', monospace;
+      resize: none;
+      outline: none;
+      box-shadow: inset 1px 1px 0px rgba(0, 0, 0, 0.1);
+      transition: all 0.3s ease;
+    }
+    
+    .notepad-content:focus {
+      box-shadow: inset 1px 1px 0px rgba(0, 0, 0, 0.1), 0 0 5px rgba(0, 0, 255, 0.5);
+    }
+    
+    /* Minesweeper */
+    .minesweeper-grid {
+      display: grid;
+      grid-template-columns: repeat(9, 24px);
+      grid-gap: 1px;
+      background-color: #808080;
+      padding: 2px;
+      border: 2px inset #808080;
+      margin-top: 5px;
+    }
+    
+    .cell {
+      width: 24px;
+      height: 24px;
+      background-color: #C0C0C0;
+      border: 2px outset #FFFFFF;
+      text-align: center;
+      line-height: 24px;
+      cursor: pointer;
+      font-weight: bold;
+      font-size: 16px;
+      transition: all 0.1s ease;
+    }
+    
+    .cell:hover {
+      background-color: #d0d0d0;
+    }
+    
+    .cell.clicked {
+      background-color: #C0C0C0;
+      border: 1px solid #808080;
+      font-size: 18px;
+    }
+    
+    /* CD Player */
+    .cd-player {
+      background: #C0C0C0;
+      border: 2px inset #FFFFFF;
+      padding: 10px;
+      margin-top: 10px;
+    }
+    
+    .cd-progress {
+      height: 10px;
+      background: #808080;
+      border: 1px solid #000;
+      margin: 10px 0;
+      position: relative;
+    }
+    
+    .cd-progress-bar {
+      height: 100%;
+      background: #000080;
+      width: 0%;
+      transition: width 0.5s linear;
+    }
+    
+    /* Boot screen */
+    #bootScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: linear-gradient(135deg, #000080 0%, #008080 100%);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      z-index: 9999;
+      font-family: 'DotGothic16', monospace;
+      cursor: pointer;
+      text-align: center;
+      text-shadow: 2px 2px 2px rgba(0, 0, 0, 0.5);
+      animation: bootFade 5s ease-in-out;
+    }
+    
+    @keyframes bootFade {
+      0% { opacity: 0; }
+      20% { opacity: 1; }
+      80% { opacity: 1; }
+      100% { opacity: 0; }
+    }
+    
+    #bootScreen h1 {
+      font-size: 48px;
+      margin: 0;
+      animation: flicker 1.5s infinite alternate;
+    }
+    
+    @keyframes flicker {
+      0%, 19%, 21%, 23%, 25%, 54%, 56%, 100% {
+        opacity: 1;
+      }
+      20%, 24%, 55% {
+        opacity: 0.6;
+      }
+    }
+    
+    /* Shutdown screen */
+    #shutdownScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: black;
+      color: white;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      font-family: 'DotGothic16', monospace;
+      text-align: center;
+      cursor: pointer;
+      z-index: 10000;
+    }
+    
+    /* Blue Screen of Death */
+    #bsodScreen {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background: #0000AA;
+      color: white;
+      display: none;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      font-family: 'Courier New', monospace;
+      z-index: 20000;
+      padding: 20px;
+      text-align: left;
+      line-height: 1.4;
+    }
+    
+    .bsod-content {
+      max-width: 600px;
+      font-size: 14px;
+    }
+    
+    .bsod-content p {
+      margin-bottom: 8px;
+    }
+    
+    .bsod-title {
+      font-size: 24px;
+      font-weight: bold;
+      margin-bottom: 20px;
+      background: #0000FF;
+      padding: 5px;
+      width: 100%;
+      text-align: center;
+    }
+    
+    /* Ransomware popup */
+    .ransomware-popup {
+      background-color: #C0C0C0;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      position: absolute;
+      z-index: 999;
+      width: 300px;
+      box-shadow: 3px 3px 3px rgba(0,0,0,0.3);
+      animation: popupAppear 0.3s ease-out forwards;
+      transform-origin: center;
+    }
+    
+    @keyframes popupAppear {
+      from { transform: scale(0.8); opacity: 0; }
+      to { transform: scale(1); opacity: 1; }
+    }
+    
+    .popup-title {
+      background-color: #ff0000;
+      color: white;
+      padding: 4px;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+    }
+    
+    .popup-content {
+      padding: 15px;
+      font-family: 'Courier New', monospace;
+      font-size: 14px;
+      line-height: 1.5;
+      text-align: center;
+    }
+    
+    .popup-content p {
+      margin: 10px 0;
+    }
+    
+    /* Antivirus popup */
+    .antivirus-popup {
+      background-color: #C0C0C0;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      position: absolute;
+      z-index: 10000;
+      width: 300px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 3px 3px 3px rgba(0,0,0,0.3);
+      animation: popupAppear 0.4s ease-out forwards;
+    }
+    
+    .antivirus-title {
+      background-color: #000080;
+      color: white;
+      padding: 4px;
+      font-weight: bold;
+      text-align: center;
+      text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.5);
+    }
+    
+    /* Error sound effect */
+    #errorSound {
+      display: none;
+    }
+    
+    /* Scrollbar styling */
+    ::-webkit-scrollbar {
+      width: 16px;
+    }
+    
+    ::-webkit-scrollbar-track {
+      background: #C0C0C0;
+      border-left: 1px solid #808080;
+    }
+    
+    ::-webkit-scrollbar-thumb {
+      background: #C0C0C0;
+      border: 2px solid;
+      border-color: #FFFFFF #808080 #808080 #FFFFFF;
+      transition: background 0.3s ease;
+    }
+    
+    ::-webkit-scrollbar-thumb:hover {
+      background: #d0d0d0;
+    }
+    
+    /* Pixelated effect for realism */
+    .pixelated {
+      image-rendering: pixelated;
+      image-rendering: -moz-crisp-edges;
+      image-rendering: crisp-edges;
+    }
+    
+    /* Window animations */
+    .window-minimize {
+      animation: minimizeWindow 0.3s forwards;
+    }
+    
+    @keyframes minimizeWindow {
+      to {
+        opacity: 0;
+        transform: translateY(100px);
+      }
+    }
+    
+    /* Program icons */
+    .program-icon {
+      width: 80px;
+      text-align: center;
+      margin: 10px;
+      cursor: pointer;
+      transition: all 0.2s ease;
+    }
+    
+    .program-icon:hover {
+      background-color: rgba(0, 0, 128, 0.1);
+    }
+    
+    .program-icon img {
+      width: 48px;
+      margin-bottom: 5px;
+    }
+    
+    /* Loading animation */
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 3px solid rgba(255,255,255,.3);
+      border-radius: 50%;
+      border-top-color: white;
+      animation: spin 1s ease-in-out infinite;
+      margin-right: 10px;
+      vertical-align: middle;
+    }
+    
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+    
+    /* Search styling */
+    .search-result {
+      margin-bottom: 15px;
+      padding: 8px;
+      border-bottom: 1px dotted #808080;
+    }
+    .search-result a {
+      color: #000080;
+      text-decoration: underline;
+      font-weight: bold;
+      display: block;
+      margin-bottom: 3px;
+    }
+    .search-result .url {
+      color: #008000;
+      font-size: 12px;
+    }
+    .search-result .snippet {
+      font-size: 13px;
+      color: #000000;
+    }
+    .search-result .snippet .highlight {
+      background-color: #FFFF00;
+    }
+    #searchLoading {
+      text-align: center;
+      padding: 30px;
+    }
+    
+    /* Ransomware Notepad styles */
+    .ransomware-note {
+      padding: 20px;
+      text-align: center;
+      background: linear-gradient(to bottom, #C0C0C0, #E0E0E0);
+      height: 100%;
+    }
+    
+    .ransomware-note h3 {
+      color: red;
+      margin-bottom: 15px;
+      font-size: 24px;
+      text-shadow: 0 0 10px rgba(255, 0, 0, 0.7);
+    }
+    
+    .decrypt-input {
+      width: 300px;
+      padding: 8px;
+      margin: 10px 0;
+      font-family: monospace;
+      font-size: 16px;
+      letter-spacing: 1px;
+      text-align: center;
+      border: 2px inset #808080;
+      background: #000;
+      color: #0F0;
+    }
+    
+    .decrypt-button {
+      padding: 8px 20px;
+      margin: 10px;
+      background: linear-gradient(to bottom, #C0C0C0, #808080);
+      border: 2px outset #FFFFFF;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .decrypt-button:hover {
+      background: linear-gradient(to bottom, #d0d0d0, #909090);
+    }
+    
+    .decrypt-button:active {
+      border: 2px inset #FFFFFF;
+    }
+    
+    .decrypt-message {
+      color: red;
+      font-weight: bold;
+      min-height: 25px;
+      margin-top: 10px;
+      font-size: 14px;
+      text-shadow: 0 0 5px rgba(255, 0, 0, 0.3);
+    }
+    
+    .ransomware-icon {
+      width: 64px;
+      height: 64px;
+      margin: 15px auto;
+      display: block;
+    }
+    
+    .countdown {
+      font-size: 24px;
+      font-weight: bold;
+      color: red;
+      margin: 10px 0;
+      text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);
+    }
+    
+    .file-list {
+      background: #000;
+      color: #0F0;
+      padding: 10px;
+      margin: 10px 0;
+      font-family: monospace;
+      text-align: left;
+      max-height: 100px;
+      overflow: auto;
+    }
+    
+    /* Watching popup */
+    .watching-popup {
+      background-color: #000;
+      border: 2px solid red;
+      position: absolute;
+      z-index: 10000;
+      width: 400px;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      box-shadow: 0 0 20px rgba(255, 0, 0, 0.7);
+      animation: watchingAppear 0.5s ease-out forwards, shake 0.5s infinite;
+      animation-iteration-count: 3;
+    }
+    
+    @keyframes watchingAppear {
+      from { transform: translate(-50%, -50%) scale(0.5); opacity: 0; }
+      to { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+    }
+    
+    @keyframes shake {
+      0% { transform: translate(-50%, -50%) translateX(0); }
+      25% { transform: translate(-50%, -50%) translateX(-10px); }
+      50% { transform: translate(-50%, -50%) translateX(10px); }
+      75% { transform: translate(-50%, -50%) translateX(-10px); }
+      100% { transform: translate(-50%, -50%) translateX(0); }
+    }
+    
+    .watching-title {
+      background-color: #ff0000;
+      color: white;
+      padding: 8px;
+      font-weight: bold;
+      text-align: center;
+      font-size: 20px;
+      text-shadow: 0 0 5px black;
+      letter-spacing: 1px;
+    }
+    
+    .watching-content {
+      padding: 20px;
+      font-family: 'Courier New', monospace;
+      font-size: 16px;
+      line-height: 1.5;
+      text-align: center;
+      color: white;
+    }
+    
+    .watching-content p {
+      margin: 15px 0;
+    }
+    
+    .watching-content ul {
+      text-align: left;
+      margin: 15px 20px;
+      padding-left: 20px;
+    }
+    
+    .watching-content li {
+      margin: 8px 0;
+    }
+    
+    .eye-icon {
+      width: 80px;
+      height: 80px;
+      margin: 10px auto;
+      display: block;
+      filter: drop-shadow(0 0 10px red);
+    }
+    
+    .understand-button {
+      padding: 10px 30px;
+      margin: 20px 0 10px;
+      background: black;
+      color: white;
+      border: 2px outset #ff0000;
+      font-weight: bold;
+      font-size: 16px;
+      cursor: pointer;
+      transition: all 0.3s;
+    }
+    
+    .understand-button:hover {
+      background: #ff0000;
+      color: black;
+    }
+  </style>
+</head>
+<body>
+  <!-- CRT effect -->
+  <div class="crt-effect"></div>
+  
+  <!-- Boot screen -->
+  <div id="bootScreen">
+    <h1>Windows 95</h1>
+    <p>Loading system files...</p>
+    <div style="margin: 20px 0;">
+      <div class="loading"></div>
+      <span>Starting up...</span>
+    </div>
+    <p style="font-size: 16px; margin-top: 20px;">Pentium Inside</p>
+    <p style="font-size: 14px; position: absolute; bottom: 20px;">MS-DOS 7.0</p>
+  </div>
+  
+  <!-- Shutdown screen -->
+  <div id="shutdownScreen">
+    <div>
+      <p>It's now safe to turn off</p>
+      <p>your computer.</p>
+      <p style="margin-top: 20px;">Click to restart</p>
+    </div>
+  </div>
+  
+  <!-- Blue Screen of Death -->
+  <div id="bsodScreen">
+    <div class="bsod-content">
+      <div class="bsod-title">A fatal exception 0E has occurred</div>
+      <p>A fatal exception 0E has occurred at 0028:C0011E36 in VXD VMM(01) + 00010E36.</p>
+      <p>The current application will be terminated.</p>
+      <br>
+      <p>* Press any key to terminate the current application.</p>
+      <p>* Press CTRL+ALT+DEL again to restart your computer. You will</p>
+      <p>&nbsp;&nbsp;lose any unsaved information in all applications.</p>
+      <br>
+      <p>Press any key to continue _</p>
+    </div>
+  </div>
+
+  <!-- Desktop -->
+  <div class="desktop">
+    <!-- Desktop Icons -->
+    <div class="desktop-icon" style="top: 40px; left: 20px;" onclick="selectIcon(this)" ondblclick="openWindow('myComputer')">
+      <img class="pixelated" src="images/desktop.gif" alt="My Computer">
+      <div>My Computer</div>
+    </div>
+    <div class="desktop-icon" style="top: 120px; left: 20px;" onclick="selectIcon(this)" ondblclick="openWindow('myDocuments')">
+      <img class="pixelated" src="images/media.gif" alt="My Documents">
+      <div>My Documents</div>
+    </div>
+    <div class="desktop-icon" style="top: 200px; left: 20px;" onclick="selectIcon(this)" ondblclick="openWindow('recycleBin')">
+      <img class="pixelated" src="images/bin.gif" alt="Recycle Bin">
+      <div>Recycle Bin</div>
+    </div>
+    <div class="desktop-icon" style="top: 280px; left: 20px;" onclick="selectIcon(this)" ondblclick="openWindow('settings')">
+      <img class="pixelated" src="images/sett.webp" alt="Settings">
+      <div>Settings</div>
+    </div>
+    <div class="desktop-icon" style="top: 360px; left: 20px;" onclick="selectIcon(this)" ondblclick="openWindow('minesweeper')">
+      <img class="pixelated" src="images/bomb.gif" alt="Minesweeper">
+      <div>Minesweeper</div>
+    </div>
+    <div class="desktop-icon" style="top: 440px; left: 20px;" onclick="selectIcon(this)" ondblclick="openNotepad()">
+      <img class="pixelated" src="images/notepad.gif" alt="Notepad">
+      <div>Notepad</div>
+    </div>
+    
+    <!-- Windows -->
+    <div class="window" id="myComputer">
+      <div class="title-bar">
+        <span>My Computer</span>
+        <div class="title-bar-buttons">
+          <button onclick="minimizeWindow('myComputer')">_</button>
+          <button onclick="maximizeWindow('myComputer')">□</button>
+          <button onclick="closeWindow('myComputer')">x</button>
+        </div>
+      </div>
+      <div class="content">
+        <div style="display: flex; flex-wrap: wrap;">
+          <div class="program-icon" onclick="alert('Opening C: drive...')">
+            <img class="pixelated" src="images/disc.gif" alt="C:">
+            <div>Local Disk (C:)</div>
+          </div>
+          <div class="program-icon" onclick="alert('Opening D: drive...')">
+            <img class="pixelated" src="images/cd.gif" alt="D:">
+            <div>CD-ROM (D:)</div>
+          </div>
+          <div class="program-icon" onclick="openWindow('controlPanel')">
+            <img class="pixelated" src="images/cp.gif" alt="Control Panel">
+            <div>Control Panel</div>
+          </div>
+          <div class="program-icon" onclick="openWindow('printers')">
+            <img class="pixelated" src="images/printer.gif" alt="Printers">
+            <div>Printers</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="window" id="myDocuments">
+      <div class="title-bar">
+        <span>My Documents</span>
+        <div class="title-bar-buttons">
+          <button onclick="minimizeWindow('myDocuments')">_</button>
+          <button onclick="maximizeWindow('myDocuments')">□</button>
+          <button onclick="closeWindow('myDocuments')">x</button>
+        </div>
+      </div>
+      <div class="content">
+        <p>This folder is empty.</p>
+        <p>Would you like to create a new document?</p>
+        <button onclick="openNotepad()">Create Text Document</button>
+      </div>
+    </div>
+    
+    <div class="window" id="recycleBin">
+      <div class="title-bar">
+        <span>Recycle Bin</span>
+        <div class="title-bar-buttons">
+          <button onclick="minimizeWindow('recycleBin')">_</button>
+          <button onclick="maximizeWindow('recycleBin')">□</button>
+          <button onclick="closeWindow('recycleBin')">x</button>
+        </div>
+      </div>
+      <div class="content">
+        <p>Recycle Bin is empty.</p>
+        <div style="text-align: center; margin-top: 20px;">
+          <img class="pixelated" src="images/emptybin.gif" alt="Empty Bin" style="width: 64px;">
+        </div>
+      </div>
+    </div>
+    
+    <div class="window" id="settings">
+      <div class="title-bar">
+        <span>Control Panel</span>
+        <div class="title-bar-buttons">
+          <button onclick="minimizeWindow('settings')">_</button>
+          <button onclick="maximizeWindow('settings')">□</button>
+          <button onclick="closeWindow('settings')">x</button>
+        </div>
+      </div>
+      <div class="content">
+        <div style="display: flex; flex-wrap: wrap;">
+          <div class="program-icon" onclick="openWindow('displaySettings')">
+            <img class="pixelated" src="images/disp.gif" alt="Display">
+            <div>Display</div>
+          </div>
+          <div class="program-icon" onclick="openWindow('networkSettings')">
+            <img class="pixelated" src="images/net.gif" alt="Network">
+            <div>Network</div>
+          </div>
+          <div class="program-icon" onclick="openWindow('soundSettings')">
+            <img class="pixelated" src="images/sound.gif" alt="Sound">
+            <div>Sound</div>
+          </div>
+          <div class="program-icon" onclick="openWindow('keyboardSettings')">
+            <img class="pixelated" src="images/keyboard.gif" alt="Keyboard">
+            <div>Keyboard</div>
+          </div>
+        </div>
+      </div>
+    </div>
+    
+    <div class="window" id="minesweeper">
+      <div class="title-bar">
+        <span>Minesweeper</span>
+        <div class="title-bar-buttons">
+          <button onclick="minimizeWindow('minesweeper')">_</button>
+          <button onclick="maximizeWindow('minesweeper')">□</button>
+          <button onclick="closeWindow('minesweeper')">x</button>
+        </div>
+      </div>
+      <div class="content">
+        <div style="display: flex; justify-content: space-between; margin-bottom: 5px;">
+          <div style="background: black; color: red; padding: 3px 10px; font-family: monospace;">010</div>
+          <button onclick="resetGame()">🙂</button>
+          <div style="background: black; color: red; padding: 3px 10px; font-family: monospace;">005</div>
+        </div>
+        <div class="minesweeper-grid" id="minesweeperGrid"></div>
+      </div>
+    </div>
+    
+    <div class="window" id="notepad">
+      <div class="title-bar">
+        <span>Untitled - Notepad</span>
+        <div class="title-bar-buttons">
+          <button onclick="minimizeWindow('notepad')">_</button>
+          <button onclick="maximizeWindow('notepad')">□</button>
+          <button onclick="closeWindow('notepad')">x</button>
+        </div>
+      </div>
+      <div class="content" id="notepadContent">
+        <textarea class="notepad-content" id="notepadTextarea">Welcome to Notepad!
+
+This is a simple text editor.c
+
+Try typing something here...</textarea>
+      </div>
+    </div>
+    
+    <div class="window" id="internetExplorer">
+      <div class="title-bar">
+        <span>Microsoft Internet Explorer</span>
+        <div class="title-bar-buttons">
+          <button onclick="minimizeWindow('internetExplorer')">_</button>
+          <button onclick="maximizeWindow('internetExplorer')">□</button>
+          <button onclick="closeWindow('internetExplorer')">x</button>
+        </div>
+      </div>
+      <div class="content">
+        <div style="display: flex; margin-bottom: 5px;">
+          <button style="margin-right: 4px;">Back</button>
+          <button style="margin-right: 4px;">Forward</button>
+          <input type="text" id="addressBar" value="www.explore.com" style="flex-grow: 1; margin-right: 4px;">
+          <button onclick="navigate()">GO</button>
+        </div>
+        <div id="browserContent" style="height: 300px; background: white; border: 2px inset; padding: 10px; overflow: auto;">
+          <!-- Content will be dynamically updated -->
+        </div>
+      </div>
+    </div>
+    
+    <div class="window" id="cdPlayer">
+      <div class="title-bar">
+        <span>CD Player</span>
+        <div class="title-bar-buttons">
+          <button onclick="minimizeWindow('cdPlayer')">_</button>
+          <button onclick="maximizeWindow('cdPlayer')">□</button>
+          <button onclick="closeWindow('cdPlayer')">x</button>
+        </div>
+      </div>
+      <div class="content">
+        <p><strong>Now Playing:</strong></p>
+        <p id="cd-track">Pet Shop Boys - Being Boring</p>
+        <p id="cd-timer">Track [01] 00:00</p>
+        <div class="cd-player">
+          <div class="cd-progress">
+            <div class="cd-progress-bar" id="cdProgress"></div>
+          </div>
+          <div class="controls" style="display: flex; justify-content: center;">
+            <button onclick="prevTrack()">◀◀</button>
+            <button onclick="playCD()" style="margin: 0 10px;">▶</button>
+            <button onclick="nextTrack()">▶▶</button>
+            <button onclick="pauseCD()" style="margin-left: 10px;">❚❚</button>
+            <button onclick="resetCD()" style="margin-left: 10px;">■</button>
+          </div>
+        </div>
+        <div style="margin-top: 10px;">
+          <strong>Playlist:</strong>
+          <ul style="margin: 5px 0; padding-left: 20px;">
+            <li>01. Pet Shop Boys - Being Boring</li>
+            <li>02. A-ha - Take On Me</li>
+            <li>03. New Order - Blue Monday</li>
+            <li>04. Depeche Mode - Enjoy the Silence</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Start Menu -->
+  <div id="startMenu">
+    <div class="start-menu-header">Windows 95</div>
+    <div class="start-menu-item" src="images/media.gif" onclick="openProgramsMenu()">Programs</div>
+    <div class="start-menu-item" src="images/media.gif" onclick="openWindow('myDocuments')">Documents</div>
+    <div class="start-menu-item" src="images/media.gif"  onclick="openWindow('settings')">Settings</div>
+    <div class="start-menu-item" src="images/media.gif" >Find</div>
+    <div class="start-menu-item" src="images/media.gif">Help</div>
+    <div class="start-menu-item" src="images/media.gif">Run...</div>
+    <div style="border-top: 1px solid #808080; margin: 4px 0;"></div>
+    <div class="start-menu-item" src="images/media.gif" onclick="shutdown()">Shut Down...</div>
+  </div>
+  
+  <!-- Programs submenu -->
+  <div id="programsMenu" style="display: none; position: absolute; bottom: 138px; left: 198px; width: 200px; background-color: #C0C0C0; border: 2px solid; border-color: #FFFFFF #808080 #808080 #FFFFFF; z-index: 3001;">
+    <div class="start-menu-item" src="images/media.gif"onclick="openAccessoriesMenu()">Accessories</div>
+    <div class="start-menu-item" src="images/media.gif">MS-DOS Prompt</div>
+    <div class="start-menu-item" src="images/media.gif">Windows Explorer</div>
+  </div>
+  
+  <!-- Accessories submenu -->
+  <div id="accessoriesMenu" style="display: none; position: absolute; bottom: 112px; left: 398px; width: 200px; background-color: #C0C0C0; border: 2px solid; border-color: #FFFFFF #808080 #808080 #FFFFFF; z-index: 3002;">
+    <div class="start-menu-item" src="images/media.gif">Calculator</div>
+    <div class="start-menu-item" src="images/media.gif" onclick="openNotepad()">Notepad</div>
+    <div class="start-menu-item" src="images/media.gif">Paint</div>
+    <div class="start-menu-item" src="images/media.gif">WordPad</div>
+  </div>
+  
+  <!-- Taskbar -->
+  <div class="taskbar">
+    <button class="start-button" onclick="toggleStartMenu()">
+      <img class="pixelated" src="images/player.gif" alt="Start">
+      Start
+    </button>
+    <div class="taskbar-app" id="ieTaskbar" onclick="focusWindow('internetExplorer')">Microsoft Internet Explorer</div>
+    <div class="taskbar-time" id="clock">8:44 PM</div>
+  </div>
+  
+  <!-- Error sound effect -->
+  <audio id="errorSound">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-system-beep-fail-2964.mp3" type="audio/mp3">
+  </audio>
+  
+  <!-- Windows startup sound -->
+  <audio id="startupSound">
+    <source src="https://www.soundjay.com/buttons/beep-01a.mp3" type="audio/mp3">
+  </audio>
+  
+  <!-- Blue screen sound -->
+  <audio id="bsodSound">
+    <source src="https://www.soundjay.com/misc/sounds/fail-trombone-03.mp3" type="audio/mp3">
+  </audio>
+  
+  <!-- Scary sound effect -->
+  <audio id="scarySound">
+    <source src="https://assets.mixkit.co/sfx/preview/mixkit-horror-laugh-439.mp3" type="audio/mp3">
+  </audio>
+  
+  <script>
+    // Enhanced Windows 95 Experience with Ransomware Attack
+    
+    // Ransomware state variables
+    let ransomwareActive = false;
+    let ransomwareCodeEntered = false;
+    let originalNotepadText = "";
+    let decryptionCountdown = 180; // 3 minutes
+    let decryptionTimer;
+    let ransomwareStarted = false;
+    
+    // Boot screen
+    setTimeout(function() {
+      document.getElementById('bootScreen').style.display = 'none';
+      document.getElementById('startupSound').play().catch(e => console.log("Audio play failed:", e));
+      document.getElementById('internetExplorer').style.display = 'block';
+      document.getElementById('ieTaskbar').classList.add('active');
+      focusWindow('internetExplorer');
+      showHomepage();
+    }, 5000);
+    
+    // Clock with date on hover
+    function updateClock() {
+      const clock = document.getElementById('clock');
+      const now = new Date();
+      let hours = now.getHours();
+      let minutes = now.getMinutes();
+      const ampm = hours >= 12 ? 'PM' : 'AM';
+      hours = hours % 12 || 12;
+      minutes = minutes < 10 ? '0' + minutes : minutes;
+      clock.textContent = `${hours}:${minutes} ${ampm}`;
+      clock.title = now.toDateString();
+    }
+    setInterval(updateClock, 1000);
+    updateClock();
+    
+    // Window management
+    let openWindows = [];
+    let zIndexCounter = 1000;
+    
+    function openWindow(id) {
+      const window = document.getElementById(id);
+      window.style.display = 'block';
+      window.style.zIndex = ++zIndexCounter;
+      focusWindow(id);
+      
+      // Position window in center if not already positioned
+      if (!window.dataset.positioned) {
+        window.style.left = '50%';
+        window.style.top = '50%';
+        window.style.transform = 'translate(-50%, -50%)';
+        window.dataset.positioned = true;
+      }
+      
+      // Add to taskbar if not already there
+      if (!document.getElementById(id + 'Taskbar')) {
+        const taskbarApp = document.createElement('div');
+        taskbarApp.className = 'taskbar-app';
+        taskbarApp.id = id + 'Taskbar';
+        taskbarApp.textContent = window.querySelector('.title-bar span').textContent;
+        taskbarApp.onclick = () => focusWindow(id);
+        document.querySelector('.taskbar').insertBefore(taskbarApp, document.querySelector('.taskbar-time'));
+      }
+      
+      document.getElementById(id + 'Taskbar').classList.add('active');
+      openWindows.push(id);
+    }
+    
+    function closeWindow(id) {
+      const window = document.getElementById(id);
+      window.classList.add('closing');
+      
+      setTimeout(() => {
+        window.style.display = 'none';
+        window.classList.remove('closing');
+        document.getElementById(id + 'Taskbar')?.remove();
+        openWindows = openWindows.filter(win => win !== id);
+        
+        // Focus the next window if available
+        if (openWindows.length > 0) {
+          focusWindow(openWindows[openWindows.length - 1]);
+        }
+      }, 300);
+    }
+    
+    function minimizeWindow(id) {
+      const window = document.getElementById(id);
+      window.classList.add('window-minimize');
+      
+      setTimeout(() => {
+        window.style.display = 'none';
+        window.classList.remove('window-minimize');
+        document.getElementById(id + 'Taskbar')?.classList.remove('active');
+      }, 300);
+    }
+    
+    function maximizeWindow(id) {
+      const window = document.getElementById(id);
+      if (window.style.width === '90vw' && window.style.height === '80vh') {
+        window.style.width = '';
+        window.style.height = '';
+        window.style.top = '';
+        window.style.left = '';
+      } else {
+        window.style.width = '90vw';
+        window.style.height = '80vh';
+        window.style.top = '5vh';
+        window.style.left = '5vw';
+      }
+    }
+    
+    function focusWindow(id) {
+      document.querySelectorAll('.window').forEach(win => {
+        win.classList.remove('focused');
+      });
+      const window = document.getElementById(id);
+      window.classList.add('focused');
+      window.style.zIndex = ++zIndexCounter;
+      
+      // Update taskbar
+      document.querySelectorAll('.taskbar-app').forEach(app => {
+        app.classList.remove('active');
+      });
+      document.getElementById(id + 'Taskbar')?.classList.add('active');
+    }
+    
+    // Desktop icon selection
+    function selectIcon(icon) {
+      document.querySelectorAll('.desktop-icon').forEach(i => {
+        i.classList.remove('selected');
+      });
+      icon.classList.add('selected');
+    }
+    
+    // Start Menu
+    function toggleStartMenu() {
+      const startMenu = document.getElementById('startMenu');
+      startMenu.style.display = startMenu.style.display === 'block' ? 'none' : 'block';
+      document.getElementById('programsMenu').style.display = 'none';
+      document.getElementById('accessoriesMenu').style.display = 'none';
+    }
+    
+    function openProgramsMenu() {
+      document.getElementById('programsMenu').style.display = 'block';
+      document.getElementById('accessoriesMenu').style.display = 'none';
+    }
+    
+    function openAccessoriesMenu() {
+      document.getElementById('accessoriesMenu').style.display = 'block';
+    }
+    
+    // Notepad function with ransomware
+    function openNotepad() {
+      openWindow('notepad');
+      
+      if (!ransomwareCodeEntered) {
+        if (!ransomwareActive) {
+          // First time triggering ransomware
+          ransomwareActive = true;
+          triggerRansomwareInNotepad();
+        } else {
+          // Already active, just show the ransomware note
+          showRansomwareInNotepad();
+        }
+      } else {
+        showNormalNotepad();
+      }
+      
+      // Auto focus textarea if normal, but if ransomware, focus the input
+      setTimeout(() => {
+        if (ransomwareActive) {
+          document.getElementById('decryptCode')?.focus();
+        } else {
+          document.getElementById('notepadTextarea')?.focus();
+        }
+      }, 100);
+    }
+    
+    function triggerRansomwareInNotepad() {
+      const notepadWindow = document.getElementById('notepad');
+      // Change the title
+      notepadWindow.querySelector('.title-bar span').textContent = 'RansomWare95 Alert - Notepad';
+      
+      // Store the current text in the notepad if any
+      originalNotepadText = document.getElementById('notepadTextarea').value;
+      
+      // Replace the content
+      const contentArea = notepadWindow.querySelector('.content');
+      contentArea.innerHTML = `
+        <div class="ransomware-note">
+          <img class="pixelated ransomware-icon" src="images/hacker.gif" alt="Warning">
+          <h3>!!! CRITICAL SYSTEM ALERT !!!</h3>
+          <p style="font-weight: bold; color: #ff0000; text-shadow: 0 0 5px rgba(255, 0, 0, 0.5);">YOUR FILES HAVE BEEN ENCRYPTED BY RANSOMWARE95!</p>
+          <p>All documents, photos, and personal files are now inaccessible.</p>
+          <p style="color: red; font-weight: bold;">This is not a drill - your data is permanently locked.</p>
+          
+          <div class="file-list">
+            <div>📄 financial_records.xls - ENCRYPTED</div>
+            <div>📷 family_photos.jpg - ENCRYPTED</div>
+            <div>📑 personal_diary.txt - ENCRYPTED</div>
+            <div>💾 backup_files.zip - ENCRYPTED</div>
+            <div>He never trusted the alphabet — said it was too straight.</div>
+            <div>So he bent it to his fingers, row by row, fate by fate.</div>
+            <div>Find the order not by books or scroll,</div>
+            <div>But by the keys that help you type and scroll.</div>
+            <div>Three rows he chose, each with ten and more,</div>
+            <div>A layout old, from typing lore.</div>
+            <div>No code will crack until you see —</div>
+            <div>The path your fingers always flee.</div>
+            <div></div>
+          </div>
+          
+          <div class="countdown" id="countdownTimer">03:00</div>
+          <p>TIME REMAINING BEFORE PERMANENT DATA DESTRUCTION:</p>
+          
+          <p>To decrypt your files, send $500 in Bitcoin to:</p>
+          <p style="font-weight: bold; background: black; color: white; padding: 5px; letter-spacing: 1px;">1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</p>
+          <p>Then enter the transaction ID below:</p>
+          <input type="text" id="decryptCode" class="decrypt-input" placeholder="Enter Bitcoin Transaction ID">
+          <div>
+            <button onclick="verifyDecryptCode()" class="decrypt-button">DECRYPT FILES</button>
+          </div>
+          <p id="decryptMessage" class="decrypt-message"></p>
+          <p style="font-size: 12px; margin-top: 20px; color: red; font-weight: bold;">WARNING: System shutdown will trigger immediate data destruction</p>
+          <p style="font-size: 10px; color: #808080;">Decryption code: AHKJGNGUHGGVBFJDGDBMMNUFPEU</p>
+        </div>
+      `;
+      
+      // Start the decryption countdown
+      startDecryptionCountdown();
+      
+      // Play error sound
+      document.getElementById('errorSound').play().catch(e => console.log("Audio play failed:", e));
+    }
+    
+    function showRansomwareInNotepad() {
+      // Just make sure the window is showing the ransomware note
+      triggerRansomwareInNotepad(); // For simplicity, we'll reuse the same function
+    }
+    
+    function showNormalNotepad() {
+      const notepadWindow = document.getElementById('notepad');
+      // Restore the title
+      notepadWindow.querySelector('.title-bar span').textContent = 'Untitled - Notepad';
+      
+      // Restore the original content
+      const contentArea = notepadWindow.querySelector('.content');
+      contentArea.innerHTML = `
+        <textarea class="notepad-content" id="notepadTextarea">${originalNotepadText}</textarea>
+      `;
+    }
+    
+    function startDecryptionCountdown() {
+      clearInterval(decryptionTimer);
+      decryptionCountdown = 180; // Reset to 3 minutes
+      updateCountdownDisplay();
+      
+      decryptionTimer = setInterval(() => {
+        decryptionCountdown--;
+        updateCountdownDisplay();
+        
+        if (decryptionCountdown <= 0) {
+          clearInterval(decryptionTimer);
+          // Trigger ransomware popups when time runs out
+          triggerRansomwarePopup();
+          document.getElementById('decryptMessage').textContent = "TIME'S UP! Your files are permanently encrypted!";
+        }
+        
+        // Play warning sound when 1 minute left
+        if (decryptionCountdown === 60) {
+          document.getElementById('errorSound').play().catch(e => console.log("Audio play failed:", e));
+        }
+      }, 1000);
+    }
+    
+    function updateCountdownDisplay() {
+      const minutes = Math.floor(decryptionCountdown / 60);
+      const seconds = decryptionCountdown % 60;
+      document.getElementById('countdownTimer').textContent = 
+        `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+    }
+    
+    function verifyDecryptCode() {
+      const inputCode = document.getElementById('decryptCode').value;
+      const messageElement = document.getElementById('decryptMessage');
+      
+      if (inputCode === "AHKJGNGUHGGVBFJDGDBMMNUFPEU") {
+        // Correct code
+        clearInterval(decryptionTimer);
+        ransomwareActive = false;
+        ransomwareCodeEntered = true;
+        showNormalNotepad();
+        messageElement.textContent = "Decryption successful! Your files have been restored.";
+        messageElement.style.color = "green";
+        
+        // Focus the textarea
+        setTimeout(() => {
+          document.getElementById('notepadTextarea').focus();
+        }, 100);
+      } else {
+        // Incorrect code
+        messageElement.textContent = "ERROR: Invalid decryption code! Files remain encrypted.";
+        messageElement.style.color = "red";
+        // Also trigger the popup ransomware
+        triggerRansomwarePopup();
+      }
+    }
+    
+    // Enhanced ransomware popup function
+    function triggerRansomwarePopup() {
+      if (ransomwareStarted) return;
+      ransomwareStarted = true;
+      
+      const popupCount = 15;
+      let created = 0;
+      
+      // Play error sound
+      document.getElementById('errorSound').play().catch(e => console.log("Audio play failed:", e));
+      
+      const createPopup = () => {
+        if (created >= popupCount) return;
+        
+        const popup = document.createElement('div');
+        popup.className = 'ransomware-popup';
+        popup.style.top = `${Math.random() * 70 + 5}%`;
+        popup.style.left = `${Math.random() * 70 + 5}%`;
+        popup.style.zIndex = zIndexCounter + created + 100;
+        
+        const errorMessages = [
+          "CRITICAL: VIRUS DETECTED!",
+          "WARNING: SYSTEM INTEGRITY COMPROMISED!",
+          "ALERT: RANSOMWARE ACTIVATED!",
+          "ERROR: FILES ENCRYPTED!",
+          "ATTENTION: PAYMENT REQUIRED!"
+        ];
+        
+        const randomMessage = errorMessages[Math.floor(Math.random() * errorMessages.length)];
+        
+        popup.innerHTML = `
+          <div class="popup-title">${randomMessage}</div>
+          <div class="popup-content">
+            <img class="pixelated" src="images/error.gif" style="width: 32px; height: 32px; margin: 0 auto; display: block;">
+            <p>Your files have been encrypted!</p>
+            <p>Send $500 in Bitcoin to:</p>
+            <p style="font-weight: bold; font-size: 12px;">1A1zP1eP5QGefi2DMPTfTL5SLmv7DivfNa</p>
+            <p>Do not shut down your computer.</p>
+            <button onclick="this.parentNode.parentNode.remove()" style="margin-top: 10px; padding: 3px 15px;">OK</button>
+          </div>
+        `;
+        
+        document.body.appendChild(popup);
+        created++;
+        
+        // Make draggable
+        makeDraggable(popup);
+        
+        // Create next popup with delay
+        setTimeout(createPopup, 300);
+      };
+      
+      createPopup();
+      
+      // Show antivirus alert after 5 seconds
+      setTimeout(showAntivirusAlert, 5000);
+      
+      // Make popups reappear every 20 seconds
+      if (!window.ransomwareInterval) {
+        window.ransomwareInterval = setInterval(() => {
+          if (ransomwareActive) {
+            createPopup();
+          }
+        }, 20000);
+      }
+    }
+    
+    // Show antivirus alert
+    function showAntivirusAlert() {
+      const popup = document.createElement('div');
+      popup.className = 'antivirus-popup';
+      popup.style.zIndex = zIndexCounter + 10000;
+      
+      popup.innerHTML = `
+        <div class="antivirus-title">Antivirus Alert</div>
+        <div class="popup-content">
+          <img class="pixelated" src="images/error.gif" style="width: 32px; height: 32px; margin: 0 auto; display: block;">
+          <p>A virus has been detected on your system!</p>
+          <p>Enable antivirus protection to remove the threat?</p>
+          <div style="display: flex; justify-content: center; margin-top: 15px; gap: 10px;">
+            <button onclick="enableAntivirus()" style="padding: 5px 15px;">Enable Antivirus</button>
+            <button onclick="showWatchingPopup()" style="padding: 5px 15px;">Cancel</button>
+          </div>
+        </div>
+      `;
+      
+      document.body.appendChild(popup);
+      makeDraggable(popup);
+    }
+    
+    // Show "We are watching you" popup
+    function showWatchingPopup() {
+      const popup = document.createElement('div');
+      popup.className = 'watching-popup';
+      popup.style.zIndex = zIndexCounter + 20000;
+      
+      popup.innerHTML = `
+        <div class="watching-title">WE ARE WATCHING YOU</div>
+        <div class="watching-content">
+          <img class="pixelated eye-icon" src="images/error.gif" alt="Eye">
+          <p style="font-size: 24px; text-shadow: 0 0 10px red;">WE SEE EVERYTHING</p>
+          <p>Your attempt to disable security has been logged.</p>
+          <p>Continue resisting and we will permanently delete:</p>
+          <ul>
+            <li>All personal documents</li>
+            <li>Family photos</li>
+            <li>Financial records</li>
+            <li>System files</li>
+          </ul>
+          <p style="font-weight: bold; color: red;">Comply or face permanent data loss.</p>
+          <button onclick="this.parentNode.parentNode.remove()" class="understand-button">I UNDERSTAND</button>
+        </div>
+      `;
+      
+      document.body.appendChild(popup);
+      
+      // Play scary sound
+      document.getElementById('scarySound').play().catch(e => console.log("Scary sound failed:", e));
+    }
+    
+    // Enable antivirus (trigger BSOD)
+    function enableAntivirus() {
+      // Play BSOD sound
+      document.getElementById('bsodSound').play().catch(e => console.log("Audio play failed:", e));
+      
+      // Show BSOD
+      document.getElementById('bsodScreen').style.display = 'flex';
+      
+      // Shutdown after delay
+      setTimeout(() => {
+        shutdown();
+      }, 5000);
+    }
+    
+    // Draggable windows
+    function makeDraggable(el) {
+      const title = el.querySelector('.title-bar, .popup-title, .antivirus-title, .watching-title');
+      if (!title) return;
+      
+      let offsetX, offsetY, isDragging = false;
+      
+      title.addEventListener('mousedown', e => {
+        isDragging = true;
+        offsetX = e.clientX - el.offsetLeft;
+        offsetY = e.clientY - el.offsetTop;
+        el.style.zIndex = ++zIndexCounter;
+        
+        if (el.classList.contains('window')) {
+          focusWindow(el.id);
+        }
+      });
+      
+      document.addEventListener('mousemove', e => {
+        if (isDragging) {
+          el.style.left = `${e.clientX - offsetX}px`;
+          el.style.top = `${e.clientY - offsetY}px`;
+        }
+      });
+      
+      document.addEventListener('mouseup', () => {
+        isDragging = false;
+      });
+    }
+    
+    // Initialize window dragging
+    document.querySelectorAll('.window').forEach(makeDraggable);
+    
+    // Shutdown function
+    function shutdown() {
+      document.getElementById('shutdownScreen').style.display = 'flex';
+      setTimeout(() => {
+        location.reload();
+      }, 3000);
+    }
+    
+    // CD Player functionality
+    let cdTime = 0;
+    let cdInterval = null;
+    let currentTrack = 1;
+    const tracks = [
+      "Pet Shop Boys - Being Boring",
+      "A-ha - Take On Me",
+      "New Order - Blue Monday",
+      "Depeche Mode - Enjoy the Silence"
+    ];
+    
+    function updateCD() {
+      const minutes = Math.floor(cdTime / 60);
+      const seconds = cdTime % 60;
+      document.getElementById('cd-timer').textContent = `Track [${currentTrack.toString().padStart(2, '0')}] ${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+      document.getElementById('cd-track').textContent = tracks[currentTrack - 1];
+      document.getElementById('cdProgress').style.width = `${(cdTime % 30) / 30 * 100}%`;
+    }
+    
+    function playCD() {
+      if (!cdInterval) {
+        cdInterval = setInterval(() => {
+          cdTime++;
+          if (cdTime % 30 === 0) {
+            nextTrack();
+          }
+          updateCD();
+        }, 1000);
+      }
+    }
+    
+    function pauseCD() {
+      clearInterval(cdInterval);
+      cdInterval = null;
+    }
+    
+    function resetCD() {
+      pauseCD();
+      cdTime = 0;
+      currentTrack = 1;
+      updateCD();
+    }
+    
+    function nextTrack() {
+      currentTrack = currentTrack < 4 ? currentTrack + 1 : 1;
+      cdTime = (currentTrack - 1) * 30;
+      updateCD();
+    }
+    
+    function prevTrack() {
+      currentTrack = currentTrack > 1 ? currentTrack - 1 : 4;
+      cdTime = (currentTrack - 1) * 30;
+      updateCD();
+    }
+    
+    // Initialize Minesweeper
+    function initMinesweeper() {
+      const grid = document.getElementById('minesweeperGrid');
+      grid.innerHTML = '';
+      
+      for (let i = 0; i < 81; i++) {
+        const cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.textContent = '';
+        cell.addEventListener('click', function() {
+          if (!this.classList.contains('clicked')) {
+            this.classList.add('clicked');
+            // 1 in 10 chance of being a mine
+            if (Math.random() < 0.1) {
+              this.textContent = '💣';
+              this.style.backgroundColor = '#ff0000';
+              setTimeout(() => {
+                alert('Game Over! You hit a mine.');
+                initMinesweeper();
+              }, 300);
+            } else {
+              // Count mines around (simplified)
+              const minesAround = Math.floor(Math.random() * 4);
+              if (minesAround > 0) {
+                this.textContent = minesAround;
+                this.style.color = ['blue', 'green', 'red', 'purple'][minesAround - 1];
+              }
+            }
+          }
+        });
+        grid.appendChild(cell);
+      }
+    }
+    
+    // Reset game function
+    function resetGame() {
+      initMinesweeper();
+    }
+    
+    // Initialize the game on page load
+    window.onload = function() {
+      initMinesweeper();
+      updateCD();
+      
+      // Make all windows draggable
+      document.querySelectorAll('.window').forEach(makeDraggable);
+      
+      // BSOD click to reload
+      document.getElementById('bsodScreen').addEventListener('click', function() {
+        location.reload();
+      });
+      
+      // Shutdown screen click to reload
+      document.getElementById('shutdownScreen').addEventListener('click', function() {
+        location.reload();
+      });
+    };
+    
+    // Search engine functionality
+    const SEARCH_DATABASE = {
+      "windows 95": [
+        { title: "Windows 95 - Wikipedia", url: "https://en.wikipedia.org/wiki/Windows_95", snippet: "Windows 95 is a consumer-oriented operating system developed by Microsoft. It was released on August 24, 1995, and was a significant advancement over the company's previous Windows products." },
+        { title: "Windows 95 Startup Sound", url: "https://www.youtube.com/watch?v=Kv9vRn0QoU4", snippet: "Listen to the iconic Windows 95 startup sound composed by Brian Eno. This sound became one of the most recognizable computer sounds in history." },
+        { title: "Windows 95 System Requirements", url: "https://www.computerhope.com/history/win95.htm", snippet: "Minimum system requirements for Windows 95: 386DX processor, 4MB RAM, 50-55MB hard disk space. Recommended: 486 processor, 8MB RAM." }
+      ],
+      "minesweeper": [
+        { title: "How to Play Minesweeper", url: "https://minesweepergame.com/strategy/how-to-play.php", snippet: "Minesweeper rules: Click on squares to reveal them. Numbers indicate mines in adjacent squares. Right-click to flag potential mines." },
+        { title: "Minesweeper History", url: "https://www.theverge.com/2015/4/1/8320661/minesweeper-windows-95-history", snippet: "Minesweeper was created by Curt Johnson and Robert Donner in 1989. It was included with Windows to teach users how to use a mouse." },
+        { title: "Minesweeper Online", url: "https://minesweeper.online/", snippet: "Play Minesweeper online for free with different difficulty levels. Experience the classic Windows 95 game in your browser." }
+      ],
+      "internet explorer": [
+        { title: "Internet Explorer History", url: "https://en.wikipedia.org/wiki/Internet_Explorer", snippet: "Internet Explorer 1.0 was released in 1995 as part of Windows 95. It quickly became the dominant web browser during the late 1990s." },
+        { title: "Why Internet Explorer Was So Popular", url: "https://www.howtogeek.com/785280/why-was-internet-explorer-so-popular/", snippet: "Internet Explorer's dominance was largely due to its bundling with Windows. By 2002, it had reached 95% market share." },
+        { title: "Internet Explorer Easter Eggs", url: "https://eeggs.com/items/81.html", snippet: "Internet Explorer 4.0 included an easter egg: Go to Help > About and press Ctrl+Shift while clicking the earth icon to see developers." }
+      ],
+      "solitaire": [
+        { title: "How to Play Solitaire", url: "https://www.solitairebliss.com/how-to-play-klondike-solitaire/", snippet: "Classic Solitaire rules: Build four foundation piles from Ace to King, each of the same suit. Move cards between tableau columns." },
+        { title: "Solitaire History", url: "https://www.nytimes.com/2021/07/07/technology/microsoft-solitaire-windows.html", snippet: "Microsoft Solitaire was created by Wes Cherry and included with Windows 3.0 in 1990. It became one of the most played computer games." },
+        { title: "Play Solitaire Online", url: "https://worldofsolitaire.com/", snippet: "Play the classic Microsoft Solitaire game online for free. Experience the same gameplay as the Windows 95 version." }
+      ],
+      "winamp": [
+        { title: "Winamp: It Really Whips the Llama's Ass", url: "https://www.winamp.com/", snippet: "Winamp is a media player for Windows created by Nullsoft in 1997. It became famous for its customizable skins and visualizations." },
+        { title: "Winamp Skins Museum", url: "https://skins.webamp.org/", snippet: "Browse thousands of classic Winamp skins from the late 1990s and early 2000s. Relive the nostalgia of customizing your media player." },
+        { title: "Winamp History", url: "https://www.vice.com/en/article/43kga3/winamp-history-oral-history", snippet: "Winamp was created by Justin Frankel in 1997. Its signature tagline 'It really whips the llama's ass' became iconic in the MP3 player era." }
+      ]
+    };
+    
+    // Show homepage
+    function showHomepage() {
+      const browserContent = document.getElementById('browserContent');
+      browserContent.innerHTML = `
+        <h1>Welcome to Windows 95 Web</h1>
+        <p>Your gateway to the World Wide Web</p>
+        <p>something is hidden Q-uantu-M</p>
+        <p style="font-size: 72px; text-align: center;">☺</p>
+        <marquee behavior="scroll" direction="left">Under Construction • Under Construction • Under Construction</marquee>
+        <p><img class="pixelated" src="images/nonet.gif" style="width: 100%;"></p>
+        <div style="text-align: center; margin-top: 20px;">
+          <img class="pixelated" src="images/web.gif" style="width: 32px;">
+          <p>Search the web:</p>
+          <div style="display: flex; margin: 10px auto; max-width: 400px;">
+            <input type="text" id="searchInput" style="flex-grow: 1; padding: 5px;" placeholder="Enter your search query">
+            <button onclick="performSearch()" style="margin-left: 5px;">Search</button>
+          </div>
+        </div>
+        <button onclick="triggerRansomwarePopup()" style="margin-top: 10px; display: block; margin: 20px auto; background: red; color: white; font-weight: bold;">Visit Suspicious Site</button>
+      `;
+    }
+    
+    // Perform search function
+    function performSearch() {
+      const searchInput = document.getElementById('searchInput');
+      const query = searchInput.value.trim().toLowerCase();
+      const browserContent = document.getElementById('browserContent');
+      
+      if (!query) {
+        showSearchError("Please enter a search query");
+        return;
+      }
+      
+      // Show loading state
+      browserContent.innerHTML = `
+        <div id="searchLoading">
+          <div class="loading"></div>
+          <p>Searching the World Wide Web for "${query}"...</p>
+          <p>Please wait while we connect to FlowOak Server</p>
+        </div>
+      `;
+      
+      // Simulate search delay
+      setTimeout(() => {
+        // Check if we have predefined results
+        if (SEARCH_DATABASE[query]) {
+          showSearchResults(query, SEARCH_DATABASE[query]);
+        } else {
+          // Generate fake results based on query
+          const fakeResults = generateFakeResults(query);
+          showSearchResults(query, fakeResults);
+        }
+      }, 2000);
+    }
+    
+    // Generate fake search results
+    function generateFakeResults(query) {
+      const results = [];
+      const titles = [
+        `All About ${capitalizeFirstLetter(query)}`,
+        `The History of ${capitalizeFirstLetter(query)}`,
+        `How to Use ${capitalizeFirstLetter(query)}`,
+        `${capitalizeFirstLetter(query)} Tips and Tricks`,
+        `Download ${capitalizeFirstLetter(query)} for Windows 95`
+      ];
+      
+      const urls = [
+        `http://www.${query.replace(/\s+/g, '-')}-guide.com/`,
+        `http://www.${query.replace(/\s+/g, '')}central.net/`,
+        `http://www.${query.replace(/\s+/g, '_')}_faq.org/`,
+        `http://www.${query.replace(/\s+/g, '')}archive.com/`,
+        `http://www.${query.replace(/\s+/g, '-')}-downloads.net/`
+      ];
+      
+      const snippets = [
+        `Learn everything you need to know about ${query} with our comprehensive guide.`,
+        `The complete history of ${query} from its origins to modern implementations.`,
+        `Step-by-step tutorial showing how to use ${query} effectively on Windows 95.`,
+        `Expert tips and tricks for getting the most out of ${query} in your daily computing.`,
+        `Download the latest version of ${query} for Windows 95 systems. Free trial available.`
+      ];
+      
+      for (let i = 0; i < 5; i++) {
+        results.push({
+          title: titles[i],
+          url: urls[i],
+          snippet: snippets[i]
+        });
+      }
+      
+      return results;
+    }
+    
+    // Helper function to capitalize first letter
+    function capitalizeFirstLetter(string) {
+      return string.charAt(0).toUpperCase() + string.slice(1);
+    }
+    
+    // Show search results
+    function showSearchResults(query, results) {
+      const browserContent = document.getElementById('browserContent');
+      let resultsHTML = `
+        <h2>Search Results for "${query}"</h2>
+        <p>Found ${results.length} results in 0.${Math.floor(Math.random() * 9)} seconds</p>
+        <hr>
+        <div id="searchResults">
+      `;
+      
+      results.forEach(result => {
+        // Highlight the search term in the snippet
+        const snippet = result.snippet.replace(
+          new RegExp(query, 'gi'), 
+          match => `<span class="highlight">${match}</span>`
+        );
+        
+        resultsHTML += `
+          <div class="search-result">
+            <a href="javascript:void(0)" onclick="alert('This is a simulated browser. In a real browser, this would go to ${result.url}')">
+              ${result.title}
+            </a>
+            <div class="url">${result.url}</div>
+            <div class="snippet">${snippet}</div>
+          </div>
+        `;
+      });
+      
+      resultsHTML += `
+        </div>
+        <div style="text-align: center; margin-top: 20px;">
+          <img class="pixelated" src="images/web.gif" style="width: 32px;">
+          <p>Search powered by Anandhakrishnan P V</p>
+        </div>
+      `;
+      
+      browserContent.innerHTML = resultsHTML;
+    }
+    
+    // Show search error
+    function showSearchError(message) {
+      const browserContent = document.getElementById('browserContent');
+      browserContent.innerHTML = `
+        <div style="text-align: center; padding: 30px; color: red;">
+          <img class="pixelated" src="images/error.gif" style="width: 32px;">
+          <h3>Search Error</h3>
+          <p>${message}</p>
+          <button onclick="showHomepage()">Back to Home</button>
+        </div>
+      `;
+    }
+    
+    // Navigate function
+    function navigate() {
+      const addressBar = document.getElementById('addressBar');
+      const address = addressBar.value.toLowerCase();
+      
+      if (address.includes('home') || address.includes('blank')) {
+        showHomepage();
+      } else {
+        showSearchError("Could not connect to server. Please try a different address.");
+      }
+    }
+    // Entering the Bitcoin transaction field triggers hidden event
+function setupBitconFieldTrigger() {
+  const observer = new MutationObserver(() => {
+    const input = document.querySelector("input[type='text']"); // Modify if selector differs
+    if (input) {
+      input.addEventListener('input', (e) => {
+        if (e.target.value.trim() === 'ENIGMATOLOGICAL') {
+          showParadoxUnlockTab();
+        }
+      });
+    }
+  });
+  observer.observe(document.body, { childList: true, subtree: true });
+}
+
+function showParadoxUnlockTab() {
+  const win = document.createElement('div');
+  win.className = 'window';
+  win.style.zIndex = 9999;
+  win.style.display = 'block';
+  win.innerHTML = `
+    <div class="title-bar">
+      <span>Decryption Panel</span>
+      <div class="title-bar-buttons">
+        <button onclick="this.closest('.window').remove()">x</button>
+      </div>
+    </div>
+    <div class="content">
+      <p style="color: green; font-weight: bold;">Everything is unlocked!</p>
+      <p><strong>Chaplin Code:</strong> PARADOX</p>
+      <p><strong>Decrypt Key:</strong> sanguinely</p>
+    </div>`;
+  document.body.appendChild(win);
+  win.style.position = 'absolute';
+  win.style.left = '50%';
+  win.style.top = '50%';
+  win.style.transform = 'translate(-50%, -50%)';
+}
+
+// Trigger loading of local dummy search
+function hijackURLField() {
+  const addressBar = document.getElementById('addressBar');
+  const goButton = addressBar?.nextElementSibling;
+  if (addressBar && goButton) {
+    goButton.addEventListener('click', () => {
+      if (addressBar.value === 'www.chaplincode.com') {
+        openWindow('internetExplorer');
+        document.getElementById('browserContent').innerHTML =
+          '<iframe src="https://anandhakrishnanpv.github.io/scc.github.io/" style="width:100%;height:100%;border:none;"></iframe>';
+      }
+    });
+  }
+}
+// Trigger loading of local dummy search
+function hijackURLField() {
+  const addressBar = document.getElementById('addressBar');
+  const goButton = addressBar?.nextElementSibling;
+  if (addressBar && goButton) {
+    goButton.addEventListener('click', () => {
+      if (addressBar.value === 'www.puzzle.com') {
+        openWindow('internetExplorer');
+        document.getElementById('browserContent').innerHTML =
+          '<iframe src="https://anandhakrishnanpv.github.io/Chaplin_Code.github.io/" style="width:100%;height:100%;border:none;"></iframe>';
+      }
+    });
+  }
+}
+
+// Media tab icon and integration
+function setupMediaTab() {
+  const mediaIcon = document.createElement('div');
+  mediaIcon.className = 'desktop-icon';
+  mediaIcon.style.top = '520px';
+  mediaIcon.style.left = '20px';
+  mediaIcon.innerHTML = `
+    <img class="pixelated" src="images/mediaa.gif" alt="Media">
+    <div>Media</div>`;
+  mediaIcon.ondblclick = () => {
+    const mediaWin = document.createElement('div');
+    mediaWin.className = 'window';
+    mediaWin.style.zIndex = 9999;
+    mediaWin.style.display = 'block';
+    mediaWin.innerHTML = `
+      <div class="title-bar">
+        <span>Media Player</span>
+        <div class="title-bar-buttons">
+          <button onclick="this.closest('.window').remove()">x</button>
+        </div>
+      </div>
+      <div class="content" style="padding: 0; height: 400px;">
+        <iframe src="player.html" style="width: 100%; height: 100%; border: none;"></iframe>
+      </div>`;
+    document.body.appendChild(mediaWin);
+    mediaWin.style.position = 'absolute';
+    mediaWin.style.left = '50%';
+    mediaWin.style.top = '50%';
+    mediaWin.style.transform = 'translate(-50%, -50%)';
+  };
+  document.querySelector('.desktop')?.appendChild(mediaIcon);
+}
+
+// Auto fullscreen
+function enterFullscreen() {
+  const docEl = document.documentElement;
+  if (docEl.requestFullscreen) docEl.requestFullscreen();
+  else if (docEl.mozRequestFullScreen) docEl.mozRequestFullScreen();
+  else if (docEl.webkitRequestFullscreen) docEl.webkitRequestFullscreen();
+  else if (docEl.msRequestFullscreen) docEl.msRequestFullscreen();
+}
+
+window.addEventListener('load', () => {
+  enterFullscreen();
+  setupBitconFieldTrigger();
+  hijackURLField();
+  setupMediaTab();
+});
+
+  </script>
+</body>
+</html>

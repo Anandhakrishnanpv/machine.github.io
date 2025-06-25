@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Media Player</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', system-ui, sans-serif;
+        }
+        
+        body {
+            background: #f5f5f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .player-container {
+            width: 100%;
+            max-width: 800px;
+            background: #fff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+        
+        .tabs {
+            display: flex;
+            border-bottom: 1px solid #eee;
+        }
+        
+        .tab {
+            flex: 1;
+            padding: 15px;
+            text-align: center;
+            background: #f8f8f8;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-weight: 500;
+            color: #666;
+        }
+        
+        .tab.active {
+            background: #fff;
+            color: #4285f4;
+            border-bottom: 2px solid #4285f4;
+        }
+        
+        .tab-content {
+            display: none;
+            padding: 20px;
+        }
+        
+        .tab-content.active {
+            display: block;
+        }
+        
+        .video-container {
+            position: relative;
+            width: 100%;
+            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
+            background: #000;
+            border-radius: 8px;
+            overflow: hidden;
+            margin-bottom: 20px;
+        }
+        
+        .video-container video {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+        
+        .audio-container {
+            display: flex;
+            align-items: center;
+            padding: 20px;
+            background: #f8f8f8;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        
+        .audio-icon {
+            font-size: 24px;
+            color: #4285f4;
+            margin-right: 15px;
+        }
+        
+        .audio-info {
+            flex: 1;
+        }
+        
+        .audio-title {
+            font-weight: 500;
+            margin-bottom: 5px;
+        }
+        
+        .audio-artist {
+            font-size: 14px;
+            color: #666;
+        }
+        
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            padding: 10px 0;
+        }
+        
+        .btn {
+            background: #f8f8f8;
+            border: 1px solid #e0e0e0;
+            color: #333;
+            padding: 10px 15px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 500;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .btn:hover {
+            background: #f0f0f0;
+            border-color: #ccc;
+        }
+        
+        .btn:active {
+            transform: scale(0.98);
+        }
+        
+        .btn i {
+            font-size: 16px;
+        }
+        
+        .time-display {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 0 15px;
+            font-size: 15px;
+            color: #666;
+        }
+        
+        .progress-container {
+            flex: 1;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .progress-bar {
+            flex: 1;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            overflow: hidden;
+            cursor: pointer;
+        }
+        
+        .progress {
+            height: 100%;
+            background: #4285f4;
+            width: 0%;
+            transition: width 0.1s linear;
+        }
+        
+        .volume-container {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .volume-slider {
+            width: 80px;
+            height: 6px;
+            background: #e0e0e0;
+            border-radius: 3px;
+            position: relative;
+            cursor: pointer;
+        }
+        
+        .volume-level {
+            height: 100%;
+            background: #4285f4;
+            width: 80%;
+        }
+        
+        /* Responsive design */
+        @media (max-width: 768px) {
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .progress-container {
+                order: -1;
+                margin-bottom: 10px;
+            }
+            
+            .btn {
+                flex: 1;
+            }
+            
+            .btn-group {
+                display: flex;
+                gap: 10px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .btn span {
+                display: none;
+            }
+            
+            .time-display {
+                padding: 0 10px;
+                font-size: 13px;
+            }
+            
+            .volume-slider {
+                width: 50px;
+            }
+            
+            .audio-container {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="player-container">
+        <div class="tabs">
+            <div class="tab active" data-target="video-tab">Video Player</div>
+            <div class="tab" data-target="audio-tab">Audio Player</div>
+        </div>
+        
+        <!-- Video Player Tab -->
+        <div id="video-tab" class="tab-content active">
+            <div class="video-container">
+                <video id="videoPlayer">
+                    <source src="images/vid.mp4" type="video/mp4">
+                    Your browser does not support the video tag.
+                </video>
+            </div>
+            
+            <div class="controls">
+                <div class="progress-container">
+                    <div class="progress-bar" id="video-progress-bar">
+                        <div class="progress" id="video-progress"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="video-current-time">0:00</span> / 
+                        <span id="video-duration">0:00</span>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn" id="video-play-btn">
+                        <i class="fas fa-play"></i>
+                        <span>Play</span>
+                    </button>
+                    <button class="btn" id="video-pause-btn">
+                        <i class="fas fa-pause"></i>
+                        <span>Pause</span>
+                    </button>
+                </div>
+                
+                <button class="btn" id="video-mute-btn">
+                    <i class="fas fa-volume-up"></i>
+                    <span>Mute</span>
+                </button>
+                
+                <div class="volume-container">
+                    <i class="fas fa-volume-down"></i>
+                    <div class="volume-slider" id="video-volume-slider">
+                        <div class="volume-level" id="video-volume-level"></div>
+                    </div>
+                    <i class="fas fa-volume-up"></i>
+                </div>
+                
+                <button class="btn" id="video-fullscreen-btn">
+                    <i class="fas fa-expand"></i>
+                    <span>Fullscreen</span>
+                </button>
+            </div>
+        </div>
+        
+        <!-- Audio Player Tab -->
+        <div id="audio-tab" class="tab-content">
+            <div class="audio-container">
+                <div class="audio-icon">
+                    <i class="fas fa-music"></i>
+                </div>
+                <div class="audio-info">
+                    <div class="audio-title">Your Audio File</div>
+                    <div class="audio-artist">aud.mp3</div>
+                </div>
+            </div>
+            
+            <div class="controls">
+                <div class="progress-container">
+                    <div class="progress-bar" id="audio-progress-bar">
+                        <div class="progress" id="audio-progress"></div>
+                    </div>
+                    <div class="time-display">
+                        <span id="audio-current-time">0:00</span> / 
+                        <span id="audio-duration">0:00</span>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button class="btn" id="audio-play-btn">
+                        <i class="fas fa-play"></i>
+                        <span>Play</span>
+                    </button>
+                    <button class="btn" id="audio-pause-btn">
+                        <i class="fas fa-pause"></i>
+                        <span>Pause</span>
+                    </button>
+                </div>
+                
+                <button class="btn" id="audio-mute-btn">
+                    <i class="fas fa-volume-up"></i>
+                    <span>Mute</span>
+                </button>
+                
+                <div class="volume-container">
+                    <i class="fas fa-volume-down"></i>
+                    <div class="volume-slider" id="audio-volume-slider">
+                        <div class="volume-level" id="audio-volume-level"></div>
+                    </div>
+                    <i class="fas fa-volume-up"></i>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Tab switching functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', () => {
+                // Remove active class from all tabs and content
+                document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+                document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+                
+                // Add active class to clicked tab and corresponding content
+                tab.classList.add('active');
+                document.getElementById(tab.dataset.target).classList.add('active');
+            });
+        });
+        
+        // Video Player Functions
+        const videoPlayer = document.getElementById('videoPlayer');
+        const videoPlayBtn = document.getElementById('video-play-btn');
+        const videoPauseBtn = document.getElementById('video-pause-btn');
+        const videoMuteBtn = document.getElementById('video-mute-btn');
+        const videoFullscreenBtn = document.getElementById('video-fullscreen-btn');
+        const videoProgressBar = document.getElementById('video-progress-bar');
+        const videoProgress = document.getElementById('video-progress');
+        const videoVolumeSlider = document.getElementById('video-volume-slider');
+        const videoVolumeLevel = document.getElementById('video-volume-level');
+        const videoCurrentTime = document.getElementById('video-current-time');
+        const videoDuration = document.getElementById('video-duration');
+        
+        // Audio Player Elements
+        const audioPlayer = document.getElementById('audioPlayer');
+        const audioPlayBtn = document.getElementById('audio-play-btn');
+        const audioPauseBtn = document.getElementById('audio-pause-btn');
+        const audioMuteBtn = document.getElementById('audio-mute-btn');
+        const audioProgressBar = document.getElementById('audio-progress-bar');
+        const audioProgress = document.getElementById('audio-progress');
+        const audioVolumeSlider = document.getElementById('audio-volume-slider');
+        const audioVolumeLevel = document.getElementById('audio-volume-level');
+        const audioCurrentTime = document.getElementById('audio-current-time');
+        const audioDuration = document.getElementById('audio-duration');
+        
+        // Create audio element dynamically
+        const audioElement = document.createElement('audio');
+        audioElement.id = 'audioPlayer';
+        audioElement.src = 'images/aud.mp3';
+        document.getElementById('audio-tab').appendChild(audioElement);
+        
+        // Format time as MM:SS
+        function formatTime(seconds) {
+            const mins = Math.floor(seconds / 60);
+            const secs = Math.floor(seconds % 60);
+            return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        }
+        
+        // Initialize Video Player
+        function initVideoPlayer() {
+            // Set video duration
+            videoDuration.textContent = formatTime(videoPlayer.duration);
+            
+            // Set initial volume display
+            videoVolumeLevel.style.width = `${videoPlayer.volume * 100}%`;
+            
+            // Update time as video plays
+            videoPlayer.addEventListener('timeupdate', () => {
+                const percent = (videoPlayer.currentTime / videoPlayer.duration) * 100;
+                videoProgress.style.width = `${percent}%`;
+                videoCurrentTime.textContent = formatTime(videoPlayer.currentTime);
+            });
+            
+            // Play/Pause functionality
+            videoPlayBtn.addEventListener('click', () => {
+                videoPlayer.play();
+                videoPlayBtn.style.display = 'none';
+                videoPauseBtn.style.display = 'flex';
+            });
+            
+            videoPauseBtn.addEventListener('click', () => {
+                videoPlayer.pause();
+                videoPlayBtn.style.display = 'flex';
+                videoPauseBtn.style.display = 'none';
+            });
+            
+            // Mute functionality
+            videoMuteBtn.addEventListener('click', () => {
+                videoPlayer.muted = !videoPlayer.muted;
+                videoMuteBtn.innerHTML = videoPlayer.muted ? 
+                    '<i class="fas fa-volume-mute"></i><span>Unmute</span>' : 
+                    '<i class="fas fa-volume-up"></i><span>Mute</span>';
+            });
+            
+            // Fullscreen functionality
+            videoFullscreenBtn.addEventListener('click', () => {
+                if (videoPlayer.requestFullscreen) {
+                    videoPlayer.requestFullscreen();
+                } else if (videoPlayer.mozRequestFullScreen) {
+                    videoPlayer.mozRequestFullScreen();
+                } else if (videoPlayer.webkitRequestFullscreen) {
+                    videoPlayer.webkitRequestFullscreen();
+                } else if (videoPlayer.msRequestFullscreen) {
+                    videoPlayer.msRequestFullscreen();
+                }
+            });
+            
+            // Progress bar click
+            videoProgressBar.addEventListener('click', (e) => {
+                const width = videoProgressBar.clientWidth;
+                const clickX = e.offsetX;
+                const percent = (clickX / width);
+                videoPlayer.currentTime = percent * videoPlayer.duration;
+            });
+            
+            // Volume slider click
+            videoVolumeSlider.addEventListener('click', (e) => {
+                const width = videoVolumeSlider.clientWidth;
+                const clickX = e.offsetX;
+                const volume = clickX / width;
+                videoPlayer.volume = volume;
+                videoVolumeLevel.style.width = `${volume * 100}%`;
+                
+                // Update mute button icon
+                videoMuteBtn.innerHTML = volume === 0 ? 
+                    '<i class="fas fa-volume-mute"></i><span>Unmute</span>' : 
+                    '<i class="fas fa-volume-up"></i><span>Mute</span>';
+            });
+            
+            // Hide pause button initially
+            videoPauseBtn.style.display = 'none';
+        }
+        
+        // Initialize Audio Player
+        function initAudioPlayer() {
+            // Set audio duration
+            audioElement.addEventListener('loadedmetadata', () => {
+                audioDuration.textContent = formatTime(audioElement.duration);
+            });
+            
+            // Set initial volume display
+            audioVolumeLevel.style.width = `${audioElement.volume * 100}%`;
+            
+            // Update time as audio plays
+            audioElement.addEventListener('timeupdate', () => {
+                const percent = (audioElement.currentTime / audioElement.duration) * 100;
+                audioProgress.style.width = `${percent}%`;
+                audioCurrentTime.textContent = formatTime(audioElement.currentTime);
+            });
+            
+            // Play/Pause functionality
+            audioPlayBtn.addEventListener('click', () => {
+                audioElement.play();
+                audioPlayBtn.style.display = 'none';
+                audioPauseBtn.style.display = 'flex';
+            });
+            
+            audioPauseBtn.addEventListener('click', () => {
+                audioElement.pause();
+                audioPlayBtn.style.display = 'flex';
+                audioPauseBtn.style.display = 'none';
+            });
+            
+            // Mute functionality
+            audioMuteBtn.addEventListener('click', () => {
+                audioElement.muted = !audioElement.muted;
+                audioMuteBtn.innerHTML = audioElement.muted ? 
+                    '<i class="fas fa-volume-mute"></i><span>Unmute</span>' : 
+                    '<i class="fas fa-volume-up"></i><span>Mute</span>';
+            });
+            
+            // Progress bar click
+            audioProgressBar.addEventListener('click', (e) => {
+                const width = audioProgressBar.clientWidth;
+                const clickX = e.offsetX;
+                const percent = (clickX / width);
+                audioElement.currentTime = percent * audioElement.duration;
+            });
+            
+            // Volume slider click
+            audioVolumeSlider.addEventListener('click', (e) => {
+                const width = audioVolumeSlider.clientWidth;
+                const clickX = e.offsetX;
+                const volume = clickX / width;
+                audioElement.volume = volume;
+                audioVolumeLevel.style.width = `${volume * 100}%`;
+                
+                // Update mute button icon
+                audioMuteBtn.innerHTML = volume === 0 ? 
+                    '<i class="fas fa-volume-mute"></i><span>Unmute</span>' : 
+                    '<i class="fas fa-volume-up"></i><span>Mute</span>';
+            });
+            
+            // Hide pause button initially
+            audioPauseBtn.style.display = 'none';
+        }
+        
+        // Initialize players when page loads
+        window.addEventListener('load', () => {
+            initVideoPlayer();
+            initAudioPlayer();
+        });
+    </script>
+</body>
+</html>
