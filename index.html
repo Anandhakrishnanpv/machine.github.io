@@ -2027,20 +2027,6 @@ function hijackURLField() {
     });
   }
 }
-// Trigger loading of local dummy search
-function hijackURLField() {
-  const addressBar = document.getElementById('addressBar');
-  const goButton = addressBar?.nextElementSibling;
-  if (addressBar && goButton) {
-    goButton.addEventListener('click', () => {
-      if (addressBar.value === 'www.puzzle.com') {
-        openWindow('internetExplorer');
-        document.getElementById('browserContent').innerHTML =
-          '<iframe src="https://anandhakrishnanpv.github.io/scc.github.io/" style="width:100%;height:100%;border:none;"></iframe>';
-      }
-    });
-  }
-}
 
 // Media tab icon and integration
 function setupMediaTab() {
